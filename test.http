@@ -1,0 +1,6 @@
+GET http://localhost:8080/chat HTTP/1.1
+Content-Type: application/json
+
+{
+    "message": "ok so what do i like to eat, and what do i like to drink?"
+}
