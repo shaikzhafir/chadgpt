@@ -1,0 +1,37 @@
+{{template "main" .}}
+{{define "content"}}
+<div class="max-w-lg mx-auto mt-10 bg-white shadow-lg rounded-lg">
+    <!-- Chat Display -->
+    <div id="chatbox" class="p-4 h-96 overflow-y-auto">
+        <!-- Messages will be injected here -->
+    </div>
+
+    <!-- Chat Input -->
+    <form id="chatForm" hx-post="/chat-anthropic" hx-target="#chatbox" hx-swap="afterend" hx-ext="json-enc"
+        class="p-4 flex space-x-2 bg-gray-200">
+        <input type="hidden" name="session_id" value="YOUR_SESSION_ID">
+        <input type="text" name="message" id="question" placeholder="Ask a question..."
+            class="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
+        <button type="submit" class="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600">Send</button>
+    </form>
+</div>
+
+<script>
+    // Scroll to the bottom of the chatbox after receiving new messages
+    document.addEventListener('htmx:afterOnLoad', function () {
+        var chatbox = document.getElementById('chatbox');
+        chatbox.scrollTop = chatbox.scrollHeight;
+    });
+
+    // Switch sessions and load messages for the selected session
+    function loadSession(sessionID) {
+        document.getElementById('session_id').value = sessionID;
+        htmx.ajax('POST', `/load-session`, { target: '#chatbox', swap: 'outerHTML', values: { session_id: sessionID } });
+    }
+
+    // Delete session
+    function deleteSession(sessionID) {
+        htmx.ajax('POST', `/delete-session`, { target: '#sessionList', swap: 'outerHTML', values: { session_id: sessionID } });
+    }
+</script>
+{{end}}
