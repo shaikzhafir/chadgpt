@@ -1,14 +1,28 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { ModelSelector } from './components/ModelSelector';
 
 function App() {
-
+  const [model, setModel] = useState('openai');
   const [sessions, setSessions] = useState([]);
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [currentMessages, setCurrentMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
 
+  // create a new session on init and cleanup 
+  useEffect(() => {
+    // Check if there's no current session
+    if (!currentSessionId || !sessions.length) {
+      createNewSession();
+    }
+    return () => {
+      console.log('Cleaning up');
+    };
+  }, []); // Empty dependency array for init only
+
+
   const createNewSession = () => {
+    console.log('Creating new session');
     const newSessionId = `session-${Date.now()}`; // You could generate this based on some logic or from the backend
     setSessions([...sessions, { sessionId: newSessionId, messages: [] }]);
     setCurrentSessionId(newSessionId);
@@ -28,7 +42,9 @@ function App() {
 
     try {
       console.log('Sending message with session-id', currentSessionId);
-      const response = await axios.post('/chat-anthropic', { message: inputMessage }, {
+      const url = `/chat-${model}`; 
+      console.log('url:', url);
+      const response = await axios.post(url, { message: inputMessage }, {
         headers: {
           'session-id': currentSessionId,
         },
@@ -60,6 +76,10 @@ function App() {
         >
           New Session
         </button>
+        <ModelSelector
+        selectedModel={model}
+        onModelChange={setModel}
+        />
         <ul>
           {sessions.map((session) => (
             <li key={session.sessionId}>
